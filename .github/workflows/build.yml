@@ -13,16 +13,22 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Accept Android licenses
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>&1 || true
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.29.0'
       - run: flutter --version
-      - run: flutter pub get
-      - run: flutter create --project-name prerent --platforms android . 2>&1 || true
-      - run: flutter build apk --release
+      - name: Generate Android project
+        run: |
+          cd /tmp
+          flutter create --project-name prerent --platforms android prerent_app
+          cp -r prerent_app/android $GITHUB_WORKSPACE/
+          cd $GITHUB_WORKSPACE
+          cat prerent_app/pubspec.yaml | head -5
+      - name: Get packages
+        run: flutter pub get
+      - name: Build APK
+        run: flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
-          name: prerent-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: prerent-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk

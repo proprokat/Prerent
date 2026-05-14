@@ -7,34 +7,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Setup Android SDK
-        run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "platforms;android-34" "build-tools;34.0.0" 2>&1 | tail -3 || true
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>&1 | tail -3 || true
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.29.0'
       - run: flutter --version
-      - name: Build
-        run: |
+      - run: |
           cd /tmp
-          flutter create --org com.prerent --project-name prerent --platforms android prerent_build 2>&1
-          cp $GITHUB_WORKSPACE/lib/*.dart prerent_build/lib/
-          mkdir -p prerent_build/lib/screens
-          cp $GITHUB_WORKSPACE/lib/screens/*.dart prerent_build/lib/screens/
-          cp $GITHUB_WORKSPACE/pubspec.yaml prerent_build/
-          cd prerent_build
-          flutter pub get 2>&1
-          echo "=== BUILD START ==="
-          flutter build apk --debug 2>&1
-          echo "=== BUILD END ==="
+          flutter create --org com.prerent --project-name prerent --platforms android prerent_app
+          echo "=== COPIED FILES ==="
+          ls -la prerent_app/lib/
+      - run: |
+          cp -r /tmp/prerent_app/android $GITHUB_WORKSPACE/
+          cp -r /tmp/prerent_app/.gradle $GITHUB_WORKSPACE/ 2>/dev/null || true
+          cd $GITHUB_WORKSPACE
+          chmod +x android/gradlew 2>/dev/null || true
+          echo "=== ANDROID DIR ==="
+          ls -la android/
+          flutter pub get
+          echo "=== BUILD STARTED ==="
+          flutter build apk --debug
+          echo "=== BUILD COMPLETE ==="
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: prerent-apk
-          path: /tmp/prerent_build/build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk

@@ -17,18 +17,17 @@ jobs:
         with:
           flutter-version: '3.29.0'
       - run: flutter --version
-      - name: Generate Android project
+      - name: Build
         run: |
           cd /tmp
-          flutter create --project-name prerent --platforms android prerent_app
-          cp -r prerent_app/android $GITHUB_WORKSPACE/
-          cd $GITHUB_WORKSPACE
-          cat prerent_app/pubspec.yaml | head -5
-      - name: Get packages
-        run: flutter pub get
-      - name: Build APK
-        run: flutter build apk --debug
+          flutter create --org com.prerent --project-name prerent --platforms android prerent_build
+          cp $GITHUB_WORKSPACE/lib/*.dart prerent_build/lib/
+          cp $GITHUB_WORKSPACE/lib/screens/*.dart prerent_build/lib/screens/
+          cp $GITHUB_WORKSPACE/pubspec.yaml prerent_build/
+          cd prerent_build
+          flutter pub get
+          flutter build apk --debug 2>&1
       - uses: actions/upload-artifact@v4
         with:
-          name: prerent-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: prerent-apk
+          path: /tmp/prerent_build/build/app/outputs/flutter-apk/app-debug.apk

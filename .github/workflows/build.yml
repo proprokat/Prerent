@@ -3,6 +3,7 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,10 +13,8 @@ jobs:
         with:
           channel: 'stable'
       - run: flutter pub get
-        working-directory: prerent_app
       - run: flutter build apk --release
-        working-directory: prerent_app
       - uses: actions/upload-artifact@v4
         with:
           name: prerent-apk
-          path: prerent_app/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk

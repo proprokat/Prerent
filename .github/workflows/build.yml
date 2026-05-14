@@ -18,6 +18,7 @@ jobs:
         with:
           flutter-version: '3.29.0'
       - run: |
+          rm -rf /tmp/prerent_app
           flutter create --org com.prerent --project-name prerent --platforms android /tmp/prerent_app
           cp $GITHUB_WORKSPACE/pubspec.yaml /tmp/prerent_app/
           cp $GITHUB_WORKSPACE/lib/*.dart /tmp/prerent_app/lib/

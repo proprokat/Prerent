@@ -17,18 +17,25 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.29.0'
-      - run: |
-          rm -rf /tmp/prerent_app
-          flutter create --org com.prerent --project-name prerent --platforms android /tmp/prerent_app
+
+      - name: Create project
+        run: rm -rf /tmp/prerent_app && flutter create --org com.prerent --project-name prerent --platforms android /tmp/prerent_app
+
+      - name: Copy sources
+        run: |
           cp $GITHUB_WORKSPACE/pubspec.yaml /tmp/prerent_app/
           cp $GITHUB_WORKSPACE/lib/*.dart /tmp/prerent_app/lib/
           mkdir -p /tmp/prerent_app/lib/screens
           cp $GITHUB_WORKSPACE/lib/screens/*.dart /tmp/prerent_app/lib/screens/
-          cd /tmp/prerent_app
-          flutter pub get
-          flutter build apk --debug
+
+      - name: Build APK
+        run: cd /tmp/prerent_app && flutter pub get && flutter build apk --debug
+
+      - name: Copy artifact
+        run: |
           mkdir -p $GITHUB_WORKSPACE/apk
-          cp build/app/outputs/flutter-apk/app-debug.apk $GITHUB_WORKSPACE/apk/
+          cp /tmp/prerent_app/build/app/outputs/flutter-apk/app-debug.apk $GITHUB_WORKSPACE/apk/
+
       - uses: actions/upload-artifact@v4
         with:
           name: prerent-apk

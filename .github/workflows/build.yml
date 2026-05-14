@@ -18,22 +18,26 @@ jobs:
         with:
           flutter-version: '3.29.0'
       - run: flutter --version
-      - run: |
+      - name: Full Build
+        run: |
+          set -e
           cd /tmp
           flutter create --org com.prerent --project-name prerent --platforms android prerent_app
-          echo "=== COPIED FILES ==="
-          ls -la prerent_app/lib/
-      - run: |
-          cp -r /tmp/prerent_app/android $GITHUB_WORKSPACE/
-          cp -r /tmp/prerent_app/.gradle $GITHUB_WORKSPACE/ 2>/dev/null || true
-          cd $GITHUB_WORKSPACE
-          chmod +x android/gradlew 2>/dev/null || true
-          echo "=== ANDROID DIR ==="
-          ls -la android/
+          echo "=== FILES ==="
+          ls -la /tmp/prerent_app/
+          ls -la /tmp/prerent_app/android/ || echo "NO ANDROID DIR"
+          
+          mkdir -p /tmp/prerent_app/lib/screens
+          cp $GITHUB_WORKSPACE/lib/*.dart /tmp/prerent_app/lib/
+          cp $GITHUB_WORKSPACE/lib/screens/*.dart /tmp/prerent_app/lib/screens/
+          cp $GITHUB_WORKSPACE/pubspec.yaml /tmp/prerent_app/
+          
+          cd /tmp/prerent_app
           flutter pub get
-          echo "=== BUILD STARTED ==="
           flutter build apk --debug
-          echo "=== BUILD COMPLETE ==="
+          
+          mkdir -p $GITHUB_WORKSPACE/build/app/outputs/flutter-apk/
+          cp build/app/outputs/flutter-apk/app-debug.apk $GITHUB_WORKSPACE/build/app/outputs/flutter-apk/
       - uses: actions/upload-artifact@v4
         if: always()
         with:

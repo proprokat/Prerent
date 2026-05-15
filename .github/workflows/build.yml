@@ -17,24 +17,19 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.29.0'
-      - name: Build
+      - name: Create project
+        run: rm -rf /tmp/app && flutter create --org com.prerent --project-name prerent /tmp/app
+      - name: Add deps
+        run: cd /tmp/app && flutter pub add http
+      - name: Copy sources
         run: |
-          # Create clean project
-          rm -rf /tmp/myapp
-          flutter create --org com.prerent --project-name prerent /tmp/myapp
-          # Add dependencies one by one
-          cd /tmp/myapp
-          flutter pub add http intl shared_preferences fl_chart cupertino_icons
-          # Copy our source files
-          cp $GITHUB_WORKSPACE/lib/*.dart /tmp/myapp/lib/
-          mkdir -p /tmp/myapp/lib/screens
-          cp $GITHUB_WORKSPACE/lib/screens/*.dart /tmp/myapp/lib/screens/
-          # Build
-          flutter build apk --debug
-          # Copy artifact
-          mkdir -p $GITHUB_WORKSPACE/apk
-          cp build/app/outputs/flutter-apk/app-debug.apk $GITHUB_WORKSPACE/apk/
+          cp $GITHUB_WORKSPACE/lib/main.dart /tmp/app/lib/
+          cp $GITHUB_WORKSPACE/lib/api_client.dart /tmp/app/lib/
+          mkdir -p /tmp/app/lib/screens
+          cp $GITHUB_WORKSPACE/lib/screens/*.dart /tmp/app/lib/screens/ 2>/dev/null || true
+      - name: Build APK
+        run: cd /tmp/app && flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
           name: prerent-apk
-          path: apk/app-debug.apk
+          path: /tmp/app/build/app/outputs/flutter-apk/app-debug.apk
